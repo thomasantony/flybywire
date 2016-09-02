@@ -1,3 +1,9 @@
+# Rename to flybywire
+# Write vdom library that produces JSON in format acceptable by
+#   vdom-as-json
+# Keep leeoniya/domvm in mind
+# Make flybywire independent of vdom framework?? Maybe later
+#
 import asyncio
 import os
 
@@ -11,6 +17,12 @@ class vDom(object):
     def __init__(self):
         self.interface = SofiEventProcessor()
         self.server = SofiEventServer(processor=self.interface)
+        self.register('shutdown', self.shutdown)
+
+    @asyncio.coroutine
+    def shutdown(self, event):
+        logging.info('SHUTDOWN')
+        self.server.stop()
 
     def start(self, autobrowse=True):
         """Start the application"""
@@ -44,7 +56,8 @@ class SofiEventProcessor(object):
                  'mouseup': { '_': [] },
                  'keydown': { '_': [] },
                  'keyup': { '_': [] },
-                 'keypress': { '_': [] }
+                 'keypress': { '_': [] },
+                 'shutdown': { '_': []},
                }
 
     def register(self, event, callback, selector=None):
@@ -61,7 +74,7 @@ class SofiEventProcessor(object):
 
         self.handlers[event][key].append(callback)
 
-        if event not in ('init', 'load', 'close') and len(self.handlers[event].keys()) > 1:
+        if event not in ('init', 'load', 'close', 'shutdown') and len(self.handlers[event].keys()) > 1:
             capture = False
             if selector is None:
                 selector = 'html'
@@ -148,6 +161,9 @@ class SofiEventServer(object):
 
         self.loop = asyncio.get_event_loop()
         self.server = self.loop.create_server(factory, '0.0.0.0', port)
+
+    def stop(self):
+        self.loop.stop()
 
     def start(self, autobrowse=True):
         self.loop.run_until_complete(self.server)
