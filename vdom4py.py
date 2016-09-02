@@ -44,6 +44,11 @@ class vDom(object):
 
         self.interface.dispatch({ 'name': 'init', 'html': html })
 
+    def render(self, vdom):
+        """Converts given vdom to JSON and sends it to browser for rendering."""
+        
+        self.interface.dispatch({ 'name': 'render', 'vdom': json.dumps(vdom)})
+
 
 class SofiEventProcessor(object):
     """Event handler providing hooks for callback functions"""

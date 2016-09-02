@@ -15,9 +15,10 @@ def oninit(event):
 def onload(event):
     logging.info("LOADED")
     # app.register('click', buttonclicked, selector='button')
-
     yield from asyncio.sleep(5)
-
+    vdom = {"t":3,"tn":"DIV","p":{"style":{"textAlign":"center","lineHeight":"110px","border":"1px solid red","width":"110px","height":"100px"}},"c":[{"t":1,"x":"10"}]}
+    app.render(vdom)
+    logging.info('Sending new vdom')
     return
 #
 # @asyncio.coroutine
