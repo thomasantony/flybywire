@@ -1,12 +1,9 @@
+// Or use requirebin.com
 var v = require('virtual-dom')
 var h = v.h
 var diff = v.diff
 var patch = v.patch
 var createElement = v.create
-// var h = require('virtual-dom/h');
-// var diff = require('virtual-dom/diff');
-// var patch = require('virtual-dom/patch');
-// var createElement = require('virtual-dom/create-element');
 
 // 1: Create a function that declares what the DOM should look like
 function render(count)  {
@@ -38,30 +35,37 @@ setInterval(function () {
       tree = newTree;
 }, 1000);
 
-//
-// var SOCKET_URL = "ws://127.0.0.1:9000"
-// var socket
-//
-// function init() {
-//     socket = new WebSocket(SOCKET_URL)
-//
-//     socket.onopen = function(event) {
-//         console.log("Connected to websocket server at " + SOCKET_URL)
-//         socket.send(JSON.stringify({ "event": "init" }))
-//     }
-//
-//     socket.onmessage = function(event) {
-//         console.log("Received: " + event.data)
-//
-//         command = JSON.parse(event.data)
-//         console.log(command)
-//     }
-// }
-//
-// function load() {
-//     socket.send(JSON.stringify({ "event": "load" }))
-// }
-//
-// window.onload = function(event) {
-//     init()
-// }
+
+var SOCKET_URL = "ws://127.0.0.1:9000"
+var socket
+
+function init() {
+    socket = new WebSocket(SOCKET_URL)
+
+    socket.onopen = function(event) {
+        console.log("Connected to websocket server at " + SOCKET_URL)
+        socket.send(JSON.stringify({ "event": "init" }))
+    }
+
+    socket.onmessage = function(event) {
+        console.log("Received: " + event.data)
+
+        command = JSON.parse(event.data)
+        console.log(command)
+        if (command.name == "init") {
+            // if (command.html)
+            //     d3.select("html").html(command.html)
+            load()
+        }
+    }
+}
+
+function load() {
+    console.log('Sending ...')
+    socket.send(JSON.stringify({ "event": "load" }))
+    console.log('Loading event sent')
+}
+
+window.onload = function(event) {
+    init()
+}

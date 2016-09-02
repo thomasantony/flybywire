@@ -127,7 +127,7 @@ class SofiEventProtocol(WebSocketServerProtocol):
 
     def onClose(self, wasClean, code, reason):
         logging.info("WebSocket connection closed: {}".format(reason))
-        exit(0)
+
 
 
 class SofiEventServer(object):
@@ -155,7 +155,7 @@ class SofiEventServer(object):
         try:
             path = os.path.dirname(os.path.realpath(__file__))
             if autobrowse:
-                webbrowser.open('file:///' + os.path.join(path, 'main.html'))
+                webbrowser.open('file:///' + os.path.join(path, 'static/main.html'))
             self.loop.run_forever()
 
         except KeyboardInterrupt:
