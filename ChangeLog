@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* Added .travis.yml
+* Generated AUTHORS and ChangeLog using pbr
 * Switched to setup.cfg for use with pbr
 * Added dom module for easy construction of DOM trees
 * Counter working from python. Weird issues when multiple clients open
