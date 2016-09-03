@@ -1,9 +1,12 @@
+
 # Rename to flybywire
 # Write vdom library that produces JSON in format acceptable by
 #   vdom-as-json
 # Keep leeoniya/domvm in mind
 # Make flybywire independent of vdom framework?? Maybe later
 #
+__author__ = 'Thomas Antony'
+
 import asyncio
 import os
 
@@ -13,7 +16,7 @@ import logging
 
 from autobahn.asyncio.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
-class vDom(object):
+class App(object):
     def __init__(self):
         self.interface = SofiEventProcessor()
         self.server = SofiEventServer(processor=self.interface)
@@ -47,7 +50,7 @@ class vDom(object):
     def render(self, vdom):
         """Converts given vdom to JSON and sends it to browser for rendering."""
 
-        self.interface.dispatch({ 'name': 'render', 'vdom': json.dumps(vdom)})
+        self.interface.dispatch({ 'name': 'render', 'vdom': vdom.to_json()})
 
 
 class SofiEventProcessor(object):
@@ -105,6 +108,7 @@ class SofiEventProcessor(object):
     @asyncio.coroutine
     def process(self, protocol, event):
         self.protocol = protocol
+        print(event)
         eventtype = event['event']
 
         if eventtype in self.handlers:
