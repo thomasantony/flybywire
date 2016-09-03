@@ -61,9 +61,9 @@ class DomNode(object):
             for e, cb in self.events.items():
                 # Remove 'on' from the event name to use in javascript
                 # Set attributes like fbwCLICK, fbwKEYUP etc.
-                attrib['fbw'+e[2:].upper()] = cb
-                events[e[2:]] = str(id(cb))
-                new_callbacks[str(id(cb))] = cb
+                attrib['fbw'+e[2:].upper()+'Callback'] = str(id(cb.__func__))
+                events[e[2:]] = str(id(cb.__func__))
+                new_callbacks[str(id(cb.__func__))] = (cb.__self__, cb.__func__)
 
             node['p']['fbwEvents'] = events
             node['p']['attributes'] = attrib

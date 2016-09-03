@@ -32,22 +32,23 @@ function init() {
     }
     function bind_events(){
         event_nodes = document.querySelectorAll('[fbwHasCallback]')
-        for (i = 0; i < event_nodes.length; i++) {
-            el = event_nodes[i];
+        event_nodes.forEach(function(el) {
             Object.keys(el.fbwEvents).forEach(function(evt) {
-                cb = el.fbwEvents[evt]
-                if (el.fbwCallbackId != cb){
-                    // New callback
-                    el.fbwCallbackListener = function(e){
-                        cb = el['fbw'+evt.toUpperCase()]
-                        send_dom_event(cb, e)
+                evtPrefix = 'fbw'+evt.toUpperCase();
+                if (!el[evtPrefix+'Bound']){
+                    el[evtPrefix+'Listener'] = function(e){
+                        cb = el.getAttribute(evtPrefix+'Callback')
+                        if(cb)
+                        {
+                            send_dom_event(cb, e)
+                        }
                     };
-                    el.addEventListener(evt, el.fbwCallbackListener, false);
-                    el.fbwCallbackId = cb
+                    el.addEventListener(evt, el[evtPrefix+'Listener'], false);
+                    el[evtPrefix+'Bound'] = true;
                 }
-
             });
-        }
+        });
+
     }
     function send_dom_event(callback_id, evt_obj){
         console.log('Triggering callback id'+String(callback_id));

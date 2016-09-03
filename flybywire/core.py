@@ -66,7 +66,6 @@ class App(object):
         """Trigger render() when app initializes."""
         content = self.render().to_dict()
         vdom = content['dom']
-
         self.update_callbacks(content['callbacks'])
         # Send init command to create initial DOM
         self.interface.dispatch({ 'name': 'init', 'vdom': json.dumps(vdom)})
@@ -80,8 +79,8 @@ class App(object):
     def _process_domevent(self, event):
         """Routes DOM events to the right callback function."""
         if event['callback'] in self._callbacks:
-            cb = self._callbacks[event['callback']]
-            cb(event['event_obj'])
+            cb_self, cb_func = self._callbacks[event['callback']]
+            cb_func(cb_self, event['event_obj'])
         else:
             logging.error('Callback '+event['callback']+' not found.')
 
@@ -109,6 +108,7 @@ class App(object):
         """Converts given vdom to JSON and sends it to browser for rendering."""
         content = self.render().to_dict()
         vdom = content['dom']
+        self._callbacks.update(content['callbacks'])
         self.interface.dispatch({ 'name': 'render', 'vdom': json.dumps(vdom)})
 
 

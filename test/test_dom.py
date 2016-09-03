@@ -10,7 +10,7 @@ def test_dom():
             'height': str(100 + count) + 'px'
         })
 
-    node1_dict = {'c': [{'t': 1, 'x': '0'}],
+    node1_dict = {'dom': {'c': [{'t': 1, 'x': '0'}],
                   'tn': 'DIV', 't': 3,
                   'p': {'style': {
                         'width': '100px',
@@ -20,22 +20,25 @@ def test_dom():
                         'textAlign': 'center'
                         }
                   }
-                 }
+                 },
+                 'callbacks': {}}
 
     node2 = h('div', h('span','foobar'))
-    node2_dict = {'t': 3, 'tn': 'DIV',
+    node2_dict = {'dom': {'t': 3, 'tn': 'DIV',
                     'c': [{'t': 3, 'tn': 'SPAN',
                             'c': [{'x': 'foobar', 't': 1}]
                           }]
-                 }
+                 },
+                 'callbacks': {}}
 
     node3 = h('ul', [h('li',str(i),key=i) for i in range(5)])
-    node3_dict = {'t': 3, 'tn': 'UL', 'c': [
+    node3_dict = {'dom': {'t': 3, 'tn': 'UL', 'c': [
             {'t': 3, 'tn': 'LI', 'c': [{'x': '0', 't': 1}], 'k': 0},
             {'t': 3, 'tn': 'LI', 'c': [{'x': '1', 't': 1}], 'k': 1},
             {'t': 3, 'tn': 'LI', 'c': [{'x': '2', 't': 1}], 'k': 2},
             {'t': 3, 'tn': 'LI', 'c': [{'x': '3', 't': 1}], 'k': 3},
-            {'t': 3, 'tn': 'LI', 'c': [{'x': '4', 't': 1}], 'k': 4}]}
+            {'t': 3, 'tn': 'LI', 'c': [{'x': '4', 't': 1}], 'k': 4}]},
+            'callbacks': {}}
 
     assert node1.to_dict() == node1_dict
     assert node2.to_dict() == node2_dict

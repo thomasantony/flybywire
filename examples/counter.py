@@ -12,9 +12,6 @@ class CounterApp(App):
     def render(self):
         """Renders view given application state."""
         count = self.state
-
-        print('Increment : '+str(id(self.increment)))
-        print('Decrement : '+str(id(self.decrement)))
         return h('div',
                     [h('h1', str(count)),
                      h('button', '+', onclick = self.increment),

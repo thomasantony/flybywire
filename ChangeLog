@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+* Fixed bug related to bound methods. DOM click event now working
+* DOM event working but triggering wrong callbacks
+* Rudimentary buggy implmentation of DOM events
+* Added set_interval helper function. Pending task error still exists
+* Removed extra heading from README.md
+* Added badges to README.md
 * Removed Enum from dom.py
 * Updated .travis.yml to update setuptools and pip
 * Added .travis.yml
