@@ -51,7 +51,7 @@ function init() {
 
     }
     function send_dom_event(callback_id, evt_obj){
-        console.log('Triggering callback id'+String(callback_id));
+        // console.log('Triggering callback id'+String(callback_id));
         socket.send(JSON.stringify({ "event": "domevent",
                                      "callback": String(callback_id),
                                      "event_obj": getProperties(evt_obj),
@@ -123,7 +123,6 @@ window.onload = function(event) {
     init()
 }
 window.addEventListener("beforeunload", function (e) {
-    console.log('Sending close event')
     socket.send(JSON.stringify({ "event": "close" }))
     return null;
 });

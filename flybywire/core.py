@@ -118,13 +118,6 @@ class FBWEventProcessor(object):
                  'load': { '_': [] },
                  'close': { '_': [] },
                  'domevent': {'_': []},
-                #  'click': { '_': [] },
-                #  'mousedown': { '_': [] },
-                #  'mouseup': { '_': [] },
-                #  'keydown': { '_': [] },
-                #  'keyup': { '_': [] },
-                #  'keypress': { '_': [] },
-                #  'shutdown': { '_': []},
                }
 
     def register(self, event, callback, selector=None):
@@ -169,7 +162,7 @@ class FBWEventProcessor(object):
     def process(self, protocol, event):
         self.protocol = protocol
         eventtype = event['event']
-
+        logging.info('Event triggered : '+eventtype)
         if eventtype in self.handlers:
             # Check for local handler
             if 'key' in event:
@@ -198,9 +191,9 @@ class FBWEventProtocol(WebSocketServerProtocol):
     @asyncio.coroutine
     def onMessage(self, payload, isBinary):
         if isBinary:
-            logging.info("Binary message received: {} bytes".format(len(payload)))
+            logging.debug("Binary message received: {} bytes".format(len(payload)))
         else:
-            logging.info("Text message received: {}".format(payload.decode('utf-8')))
+            logging.debug("Text message received: {}".format(payload.decode('utf-8')))
             body = json.loads(payload.decode('utf-8'))
 
             if 'event' in body:
