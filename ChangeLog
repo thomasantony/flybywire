@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* Removed Enum from dom.py
+* Updated .travis.yml to update setuptools and pip
 * Added .travis.yml
 * Generated AUTHORS and ChangeLog using pbr
 * Switched to setup.cfg for use with pbr
