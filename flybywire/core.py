@@ -20,14 +20,16 @@ class App(object):
         self.interface = FBWEventProcessor()
         self.server = FBWEventServer(processor=self.interface)
         self._state = None
-
+        self._callbacks = {}
         logging.basicConfig(
             format="%(asctime)s [%(levelname)s] - %(funcName)s: %(message)s",
             level=logging.INFO
         )
+
         # Setup callback to initialize DOM when the client connects
         self.register('init', self._oninit)
         self.register('shutdown', self._shutdown)
+        self.register('domevent', self._process_domevent)
 
     @abc.abstractmethod
     def render():
@@ -55,15 +57,34 @@ class App(object):
             self._state.update(new_state)
         else:
             self._state = new_state
-        vdom = self.render()
+        content = self.render().to_dict()
+        vdom = content['dom']
         self.remote_render(vdom)
 
     @asyncio.coroutine
     def _oninit(self, event):
         """Trigger render() when app initializes."""
-        vdom = self.render()
+        content = self.render().to_dict()
+        vdom = content['dom']
+
+        self.update_callbacks(content['callbacks'])
         # Send init command to create initial DOM
-        self.interface.dispatch({ 'name': 'init', 'vdom': vdom.to_json() })
+        self.interface.dispatch({ 'name': 'init', 'vdom': json.dumps(vdom)})
+
+    def update_callbacks(self, callbacks):
+        """Updates internal list with callbacks found in the dom."""
+        if callbacks != self._callbacks:
+            self._callbacks.update(callbacks)
+
+    @asyncio.coroutine
+    def _process_domevent(self, event):
+        """Routes DOM events to the right callback function."""
+        if event['callback'] in self._callbacks:
+            cb = self._callbacks[event['callback']]
+            cb(event['event_obj'])
+        else:
+            logging.error('Callback '+event['callback']+' not found.')
+
 
     @asyncio.coroutine
     def _shutdown(self, event):
@@ -86,8 +107,9 @@ class App(object):
 
     def remote_render(self, vdom):
         """Converts given vdom to JSON and sends it to browser for rendering."""
-
-        self.interface.dispatch({ 'name': 'render', 'vdom': vdom.to_json()})
+        content = self.render().to_dict()
+        vdom = content['dom']
+        self.interface.dispatch({ 'name': 'render', 'vdom': json.dumps(vdom)})
 
 
 class FBWEventProcessor(object):
@@ -96,12 +118,13 @@ class FBWEventProcessor(object):
     handlers = { 'init': { '_': [] },
                  'load': { '_': [] },
                  'close': { '_': [] },
-                 'click': { '_': [] },
-                 'mousedown': { '_': [] },
-                 'mouseup': { '_': [] },
-                 'keydown': { '_': [] },
-                 'keyup': { '_': [] },
-                 'keypress': { '_': [] },
+                 'domevent': {'_': []},
+                #  'click': { '_': [] },
+                #  'mousedown': { '_': [] },
+                #  'mouseup': { '_': [] },
+                #  'keydown': { '_': [] },
+                #  'keyup': { '_': [] },
+                #  'keypress': { '_': [] },
                 #  'shutdown': { '_': []},
                }
 
@@ -119,14 +142,14 @@ class FBWEventProcessor(object):
 
         self.handlers[event][key].append(callback)
 
-        if (event not in ('init', 'load', 'close', 'shutdown')
-           and len(self.handlers[event].keys()) > 1):
-            capture = False
-            if selector is None:
-                selector = 'html'
-                capture = True
-
-            self.dispatch({ 'name': 'subscribe', 'event': event, 'selector': selector, 'capture': capture, 'key': str(id(callback)) })
+        # if (event not in ('init', 'load', 'close', 'shutdown')
+        #    and len(self.handlers[event].keys()) > 1):
+        #     capture = False
+        #     if selector is None:
+        #         selector = 'html'
+        #         capture = True
+        #
+        #     self.dispatch({ 'name': 'subscribe', 'event': event, 'selector': selector, 'capture': capture, 'key': str(id(callback)) })
 
     def unregister(self, event, callback, selector=None):
         if event not in self.handlers:
@@ -137,8 +160,8 @@ class FBWEventProcessor(object):
         else:
             self.handlers[event].pop(str(id(callback)))
 
-        if event not in ('init', 'load', 'close'):
-            self.dispatch({ 'name': 'unsubscribe', 'event': event, 'selector': selector, 'key': str(id(callback)) })
+        # if event not in ('init', 'load', 'close'):
+        #     self.dispatch({ 'name': 'unsubscribe', 'event': event, 'selector': selector, 'key': str(id(callback)) })
 
     def dispatch(self, command):
         self.protocol.sendMessage(bytes(json.dumps(command), 'utf-8'), False)
@@ -184,13 +207,9 @@ class FBWEventProtocol(WebSocketServerProtocol):
             if 'event' in body:
                 yield from self.processor.process(self, body)
 
-    @asyncio.coroutine
     def onClose(self, wasClean, code, reason):
         logging.info("WebSocket connection closed: {}".format(reason))
-        # pending = asyncio.Task.all_tasks()
-        # loop.run_until_complete(asyncio.gather(*pending))
-        # loop.close()
-        exit(0)  # For now
+        # exit(0)  # For now
 
 
 class FBWEventServer(object):
