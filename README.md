@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/thomasantony/flybywire.svg?branch=master)](https://travis-ci.org/thomasantony/flybywire)
 [![PyPI version](https://badge.fury.io/py/flybywire.svg)](https://badge.fury.io/py/flybywire)
 
-# Installation
-
 The interface is built using a virtual-DOM layer and rendered using HTML/CSS in a browser while all the view logic is written in pure Python over `websockets`. Instead of providing a set of widgets, `flybywire` allows you to build components in a declarative manner out of standard HTML tags and CSS.
 
 As in React, the view is described as pure functions of the state. Any changes to the state automatically triggers a redraw of the entire window. `flybywire` uses the [virtual-dom](https://github.com/Matt-Esch/virtual-dom) library to update only those parts of the window that were actually modified.
