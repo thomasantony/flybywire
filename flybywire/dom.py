@@ -5,7 +5,6 @@ Provides classes and helper functions for easily defining virtual DOM trees.
 """
 from collections import Iterable, defaultdict
 import json
-from enum import Enum
 
 class NodeType(object):
     """Node types as defined by the vdom-as-json library."""
