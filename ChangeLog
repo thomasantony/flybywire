@@ -1,0 +1,11 @@
+CHANGES
+=======
+
+* Switched to setup.cfg for use with pbr
+* Added dom module for easy construction of DOM trees
+* Counter working from python. Weird issues when multiple clients open
+* Updated dom over websocket
+* Added rough shutdown command
+* Made server persistent and two-way communication verified
+* Got vdom counter running in pure JS
+* Initial commit
