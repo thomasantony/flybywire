@@ -184,8 +184,12 @@ class FBWEventProtocol(WebSocketServerProtocol):
             if 'event' in body:
                 yield from self.processor.process(self, body)
 
+    @asyncio.coroutine
     def onClose(self, wasClean, code, reason):
         logging.info("WebSocket connection closed: {}".format(reason))
+        # pending = asyncio.Task.all_tasks()
+        # loop.run_until_complete(asyncio.gather(*pending))
+        # loop.close()
         exit(0)  # For now
 
 

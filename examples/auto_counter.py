@@ -1,6 +1,6 @@
 from flybywire.core import App
 from flybywire.dom import h
-
+from flybywire.misc import set_interval, clear_interval
 import asyncio
 
 class AutoCounterApp(App):
@@ -9,15 +9,15 @@ class AutoCounterApp(App):
         # super().__init__() # in Python 3.5
         super(AutoCounterApp, self).__init__()
         self.register('load', self.onload)
+        # self.register('close', self.onclose)
 
-        # Initialize application state
         self.set_initial_state(0)
+        self.task = None
 
     def render(self):
         """Renders view given application state."""
         count = self.state
-        # Equivalent to :
-        #   <div style="textAlign: center; ...">{count}</div>
+
         return h('div', str(count), style = {
                 'textAlign': 'center',
                 'lineHeight': str(100 + count) + 'px',
@@ -26,15 +26,24 @@ class AutoCounterApp(App):
                 'height': str(100 + count) + 'px'
         })
 
+    def tick(self):
+        """Increments counter."""
+        self.set_state(self.state + 1)
+
     @asyncio.coroutine
     def onload(self, event):
         """
         'Load' event handler with application logic
         """
-        while True:
-            yield from asyncio.sleep(1)
-            # Increment counter and trigger redraw
-            self.set_state(self.state + 1)
+        self.task = set_interval(self.tick, 1)
+
+    @asyncio.coroutine
+    def onclose(self, event):
+        """
+        Cancel the period task that was setup
+        """
+        clear_interval(self.task)
+
 
 app = AutoCounterApp()
 app.start()

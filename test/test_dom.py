@@ -29,13 +29,13 @@ def test_dom():
                           }]
                  }
 
-    node3 = h('li', [h('ul',str(i),key=i) for i in range(5)])
-    node3_dict = {'t': 3, 'tn': 'LI', 'c': [
-            {'t': 3, 'tn': 'UL', 'c': [{'x': '0', 't': 1}], 'k': 0},
-            {'t': 3, 'tn': 'UL', 'c': [{'x': '1', 't': 1}], 'k': 1},
-            {'t': 3, 'tn': 'UL', 'c': [{'x': '2', 't': 1}], 'k': 2},
-            {'t': 3, 'tn': 'UL', 'c': [{'x': '3', 't': 1}], 'k': 3},
-            {'t': 3, 'tn': 'UL', 'c': [{'x': '4', 't': 1}], 'k': 4}]}
+    node3 = h('ul', [h('li',str(i),key=i) for i in range(5)])
+    node3_dict = {'t': 3, 'tn': 'UL', 'c': [
+            {'t': 3, 'tn': 'LI', 'c': [{'x': '0', 't': 1}], 'k': 0},
+            {'t': 3, 'tn': 'LI', 'c': [{'x': '1', 't': 1}], 'k': 1},
+            {'t': 3, 'tn': 'LI', 'c': [{'x': '2', 't': 1}], 'k': 2},
+            {'t': 3, 'tn': 'LI', 'c': [{'x': '3', 't': 1}], 'k': 3},
+            {'t': 3, 'tn': 'LI', 'c': [{'x': '4', 't': 1}], 'k': 4}]}
 
     assert node1.to_dict() == node1_dict
     assert node2.to_dict() == node2_dict
