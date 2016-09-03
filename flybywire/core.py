@@ -1,35 +1,77 @@
+"""
+Module: flybywire.core
 
-# Rename to flybywire
-# Write vdom library that produces JSON in format acceptable by
-#   vdom-as-json
-# Keep leeoniya/domvm in mind
-# Make flybywire independent of vdom framework?? Maybe later
-#
-__author__ = 'Thomas Antony'
-
-import asyncio
+Contains the 'App' class which forms the base class for any Application built
+using this framework.
+"""
 import os
-
+import abc
 import json
-import webbrowser
+import asyncio
 import logging
+import webbrowser
 
 from autobahn.asyncio.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
 class App(object):
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self):
-        self.interface = SofiEventProcessor()
-        self.server = SofiEventServer(processor=self.interface)
-        self.register('shutdown', self.shutdown)
+        self.interface = FBWEventProcessor()
+        self.server = FBWEventServer(processor=self.interface)
+        self._state = None
+
+        logging.basicConfig(
+            format="%(asctime)s [%(levelname)s] - %(funcName)s: %(message)s",
+            level=logging.INFO
+        )
+        # Setup callback to initialize DOM when the client connects
+        self.register('init', self._oninit)
+        self.register('shutdown', self._shutdown)
+
+    @abc.abstractmethod
+    def render():
+        """Applications must implement this method."""
+        raise NotImplementedError()
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, _):
+        raise RuntimeError('Use the set_state() or set_initial_state() '+\
+                           'to modify the state')
+
+    def set_initial_state(self, state):
+        """Sets the application state without triggering a redraw."""
+        # Helps initialize state before client is connected
+        self._state = state
+
+    def set_state(self, new_state):
+        """Set new state and trigger redraw."""
+        if isinstance(self.state, dict) and isinstance(new_state, dict):
+            # Merge into dictionary if state is a dictionary (similar to React)
+            self._state.update(new_state)
+        else:
+            self._state = new_state
+        vdom = self.render()
+        self.remote_render(vdom)
 
     @asyncio.coroutine
-    def shutdown(self, event):
-        logging.info('SHUTDOWN')
-        self.server.stop()
+    def _oninit(self, event):
+        """Trigger render() when app initializes."""
+        vdom = self.render()
+        # Send init command to create initial DOM
+        self.interface.dispatch({ 'name': 'init', 'vdom': vdom.to_json() })
+
+    @asyncio.coroutine
+    def _shutdown(self, event):
+        """Shuts down the server."""
+        exit(0)
 
     def start(self, autobrowse=True):
-        """Start the application"""
-
+        """Start the application."""
         self.server.start(autobrowse)
 
     def register(self, event, callback, selector=None):
@@ -42,18 +84,13 @@ class App(object):
 
         self.interface.unregister(event, callback, selector)
 
-    def load(self, html):
-        """Initialize the UI. This will replace the document <html> tag contents with the supplied html."""
-
-        self.interface.dispatch({ 'name': 'init', 'html': html })
-
-    def render(self, vdom):
+    def remote_render(self, vdom):
         """Converts given vdom to JSON and sends it to browser for rendering."""
 
         self.interface.dispatch({ 'name': 'render', 'vdom': vdom.to_json()})
 
 
-class SofiEventProcessor(object):
+class FBWEventProcessor(object):
     """Event handler providing hooks for callback functions"""
 
     handlers = { 'init': { '_': [] },
@@ -65,7 +102,7 @@ class SofiEventProcessor(object):
                  'keydown': { '_': [] },
                  'keyup': { '_': [] },
                  'keypress': { '_': [] },
-                 'shutdown': { '_': []},
+                #  'shutdown': { '_': []},
                }
 
     def register(self, event, callback, selector=None):
@@ -82,7 +119,8 @@ class SofiEventProcessor(object):
 
         self.handlers[event][key].append(callback)
 
-        if event not in ('init', 'load', 'close', 'shutdown') and len(self.handlers[event].keys()) > 1:
+        if (event not in ('init', 'load', 'close', 'shutdown')
+           and len(self.handlers[event].keys()) > 1):
             capture = False
             if selector is None:
                 selector = 'html'
@@ -108,7 +146,6 @@ class SofiEventProcessor(object):
     @asyncio.coroutine
     def process(self, protocol, event):
         self.protocol = protocol
-        print(event)
         eventtype = event['event']
 
         if eventtype in self.handlers:
@@ -127,8 +164,8 @@ class SofiEventProcessor(object):
                     yield from handler(event)
 
 
-class SofiEventProtocol(WebSocketServerProtocol):
-    """Websocket event handler which dispatches events to SofiEventProcessor"""
+class FBWEventProtocol(WebSocketServerProtocol):
+    """Websocket event handler which dispatches events to FBWEventProcessor"""
 
     def onConnect(self, request):
         logging.info("Client connecting: %s" % request.peer)
@@ -149,10 +186,10 @@ class SofiEventProtocol(WebSocketServerProtocol):
 
     def onClose(self, wasClean, code, reason):
         logging.info("WebSocket connection closed: {}".format(reason))
+        exit(0)  # For now
 
 
-
-class SofiEventServer(object):
+class FBWEventServer(object):
     """Websocket event server"""
 
     def __init__(self, hostname=u"127.0.0.1", port=9000, processor=None):
@@ -162,7 +199,7 @@ class SofiEventServer(object):
         self.processor = processor
 
         factory = WebSocketServerFactory(u"ws://" + hostname + u":" + str(port))
-        protocol = SofiEventProtocol
+        protocol = FBWEventProtocol
         protocol.processor = processor
         protocol.app = self
 
