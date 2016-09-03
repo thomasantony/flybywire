@@ -28,8 +28,8 @@ class App(object):
 
         # Setup callback to initialize DOM when the client connects
         self.register('init', self._oninit)
-        self.register('shutdown', self._shutdown)
         self.register('domevent', self._process_domevent)
+        # self.register('shutdown', self._shutdown)
 
     @abc.abstractmethod
     def render():
@@ -84,11 +84,10 @@ class App(object):
         else:
             logging.error('Callback '+event['callback']+' not found.')
 
-
-    @asyncio.coroutine
-    def _shutdown(self, event):
-        """Shuts down the server."""
-        exit(0)
+    #
+    # def _shutdown(self, event):
+    #     """Shuts down the server."""
+    #     exit(0)
 
     def start(self, autobrowse=True):
         """Start the application."""
@@ -209,7 +208,14 @@ class FBWEventProtocol(WebSocketServerProtocol):
 
     def onClose(self, wasClean, code, reason):
         logging.info("WebSocket connection closed: {}".format(reason))
-        # exit(0)  # For now
+
+        # Stop server when browser exists
+        loop = asyncio.get_event_loop()
+        loop.stop()
+        # Stop all pending tasks
+        for task in asyncio.Task.all_tasks():
+            task.cancel()
+        exit(0)
 
 
 class FBWEventServer(object):

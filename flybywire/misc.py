@@ -11,21 +11,26 @@ def set_interval(fn, interval, args=()):
     args: Tuple of arguments to be passed in
 
     Returns an asyncio.Future object
+
+    Ref: http://stackoverflow.com/a/37512537/538379
     """
     @wraps(fn)
-    def repeater(future):
-        while not future.cancelled():
+    @asyncio.coroutine
+    def repeater():
+        while True:
             yield from asyncio.sleep(interval)
             fn(*args)
 
     loop = asyncio.get_event_loop()
-    future = asyncio.Future()
-    asyncio.ensure_future(repeater(future))
-    return future
+    task = asyncio.Task(repeater())
+    return task
 
 def clear_interval(task):
     """
     Stops a periodic function call setup using set_inteval()
     """
+    def stopper():
+        task.cancel()
+
     loop = asyncio.get_event_loop()
-    loop.call_soon_threadsafe(task.cancel)
+    loop.call_soon(stopper)

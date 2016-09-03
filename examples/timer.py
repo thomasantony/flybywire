@@ -3,32 +3,25 @@ from flybywire.dom import h
 from flybywire.misc import set_interval, clear_interval
 import asyncio
 
-class AutoCounterApp(App):
+class TimerApp(App):
     def __init__(self):
         """Initialize the application."""
-        # super().__init__() # in Python 3.5
-        super(AutoCounterApp, self).__init__()
+        super().__init__()
         self.register('load', self.onload)
-        # self.register('close', self.onclose)
+        self.register('close', self.onclose)
 
-        self.set_initial_state(0)
+        self.set_initial_state({'secondsElapsed': 0})
         self.task = None
 
     def render(self):
         """Renders view given application state."""
-        count = self.state
-
-        return h('div', str(count), style = {
-                'textAlign': 'center',
-                'lineHeight': str(100 + count) + 'px',
-                'border': '1px solid red',
-                'width': str(100 + count) + 'px',
-                'height': str(100 + count) + 'px'
-        })
+        count = self.state['secondsElapsed']
+        return h('div', 'Seconds Elapsed: '+str(count))
 
     def tick(self):
         """Increments counter."""
-        self.set_state(self.state + 1)
+        count = self.state['secondsElapsed']
+        self.set_state({'secondsElapsed': count + 1})
 
     @asyncio.coroutine
     def onload(self, event):
@@ -40,10 +33,10 @@ class AutoCounterApp(App):
     @asyncio.coroutine
     def onclose(self, event):
         """
-        Cancel the period task that was setup
+        Stop the timer when app closes
         """
         clear_interval(self.task)
 
 
-app = AutoCounterApp()
+app = TimerApp()
 app.start()

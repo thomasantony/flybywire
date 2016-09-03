@@ -68,7 +68,7 @@ function init() {
         command = JSON.parse(event.data)
         if (command.name == "init") {
             initialize_dom(command.vdom)
-            load()
+            socket.send(JSON.stringify({ "event": "load" }))
         } else if (command.name == "render") {
             // Pull vdom data out of the event and render
             render_from_json(command.vdom)
@@ -119,10 +119,11 @@ function getProperties(obj) {
     return newObj
 }
 
-function load() {
-    socket.send(JSON.stringify({ "event": "load" }))
-}
-
 window.onload = function(event) {
     init()
 }
+window.addEventListener("beforeunload", function (e) {
+    console.log('Sending close event')
+    socket.send(JSON.stringify({ "event": "close" }))
+    return null;
+});
