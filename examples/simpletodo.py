@@ -1,11 +1,21 @@
-from flybywire.core import App
+from flybywire.ui import Application, Component
 from flybywire.dom import h
 import asyncio
 
 def TodoItem(item):
     return h('div', str(item))
 
-class TodoApp(App):
+def NewTodoItem(onAddItem=None):
+    def handleKeyDown(event):
+        text = event['target']['value']
+        which = event.get('which', '0')
+        if int(which) == 13 and len(text) > 0:
+            onAddItem(text)
+
+    return h('input', type='text', autoFocus=True, onKeyDown=handleKeyDown)
+
+@Application
+class TodoApp(Component):
     def __init__(self):
         """Initialize the application."""
         super().__init__()
@@ -13,29 +23,17 @@ class TodoApp(App):
 
     def render(self):
         """Renders view given application state."""
-        print('Rendering with state = '+str(self.state))
         todos = self.state['todos']
         todo_items = [TodoItem(item=item) for item in todos]
         return h('div',
                     [
                         h('div', todo_items),
-                        h('input', type='text', value=self.state['new_todo'],
-                                autoFocus=True,
-                                onKeyDown=self.handleKeyDown)
-
+                        NewTodoItem(onAddItem = self.addTodo)
                     ]
                 )
-    def handleKeyDown(self, event):
-        text = event['target']['value']
-        which = event.get('which', '0')
-        if int(which) == 13 and len(text) > 0:
-            self.addItem(text)
-        else:
-            self.set_state({'new_todo': text})
 
     def addTodo(self, item):
         """Add a todo item."""
-        print('Adding item '+item)
         todos = self.state.get('todos', [])
         todos.append(item);
         self.set_state({'todos': todos, 'new_todo': ''})

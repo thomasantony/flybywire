@@ -1,8 +1,8 @@
-from flybywire.core import FBWApp
-from flybywire.ui import Component
+from flybywire.ui import Application, Component
 from flybywire.dom import h
 from flybywire.misc import set_interval, clear_interval
 
+@Application
 class TimerApp(Component):
     def __init__(self):
         """Initialize the application."""
@@ -25,15 +25,13 @@ class TimerApp(Component):
         """
         Triggers when the application first loads in the browser
         """
-        print('On load triggered')
         self.task = set_interval(self.tick, 1)
 
     def on_close(self):
         """
         Triggers when the application window is closed
         """
-        print('On close triggered')
         clear_interval(self.task)
 
-app = FBWApp(TimerApp())
+app = TimerApp()
 app.start()

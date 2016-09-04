@@ -14,16 +14,12 @@ import webbrowser
 from autobahn.asyncio.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
 class FBWApp(object):
-    def __init__(self, root_component):
+    def __init__(self, root):
         self.interface = FBWEventProcessor()
         self.server = FBWEventServer(processor=self.interface)
         self._state = None
-        self._root  = root_component
+        self._root  = root
         self._callbacks = {}
-        logging.basicConfig(
-            format="%(asctime)s [%(levelname)s] - %(funcName)s: %(message)s",
-            level=logging.INFO
-        )
 
         # Setup callback to initialize DOM when the client connects
         self.register('init', self._oninit)
@@ -33,6 +29,11 @@ class FBWApp(object):
 
         # Trigger render function when state is updated
         self._root.add_observer(self.remote_render)
+
+        logging.basicConfig(
+            format="%(asctime)s [%(levelname)s] - %(funcName)s: %(message)s",
+            level=logging.INFO
+        )
 
     def remote_render(self):
         """Converts given vdom to JSON and sends it to browser for rendering."""

@@ -1,4 +1,14 @@
 import abc
+from .core import FBWApp
+
+def Application(cls):
+    def create_fbw_app(*args, **kwargs):
+        root = cls(*args, **kwargs)
+        return FBWApp(root)
+
+    #TODO: Figure out way to fix __name__ and __doc__ in resulting instance
+    return create_fbw_app
+
 class Component(object):
     """Class defining a UI component."""
     __metaclass__ = abc.ABCMeta
