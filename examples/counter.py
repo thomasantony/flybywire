@@ -1,10 +1,11 @@
 from flybywire.core import App
-from flybywire.dom import h, component
-import asyncio
+from flybywire.dom import h
 
 
 def CounterView(count):
+    """A simple functional stateless component."""
     return h('h1', str(count))
+
 
 class CounterApp(App):
     def __init__(self):

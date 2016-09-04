@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+0.0.2
+-----
+
+* Updated README.md with new demo and gif
+* Fixed bug in test_dom.py
+* Very rudimentary (and buggy) todo app example
+* Removed @component decorator as it is not really needed in Python due to keyword args
+* Added @component decorator for functional components
+* Simplified DOM event notation
+* Added composable DOM. Added tests for callbacks and composable DOMs
 * Removed a few debugging statements
 * Added graceful exit in timer app
 * Fixed bug related to bound methods. DOM click event now working

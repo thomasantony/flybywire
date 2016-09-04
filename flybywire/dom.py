@@ -142,16 +142,6 @@ def h(tag_name, children=None, **attr_and_events):
     return DomNode(tag_name, attributes, events)
 
 
-# def component(fn):
-#     """
-#     Decorator for making functional components
-#     """
-#     @wraps(fn)
-#     def wrapped_fn(**kwargs):
-#         return h(fn, **kwargs)
-#
-#     return wrapped_fn
-
 if __name__ == '__main__':
 
     print(test.to_dict())
