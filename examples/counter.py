@@ -2,6 +2,12 @@ from flybywire.core import App
 from flybywire.dom import h
 import asyncio
 
+def CounterView(props):
+    return h('div',
+                [h('h1', str(count)),
+                 h('button', '+', onclick = self.increment),
+                 h('button', '-', onclick = self.decrement)]
+            )
 class CounterApp(App):
     def __init__(self):
         """Initialize the application."""

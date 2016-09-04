@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Removed a few debugging statements
 * Added graceful exit in timer app
 * Fixed bug related to bound methods. DOM click event now working
 * DOM event working but triggering wrong callbacks

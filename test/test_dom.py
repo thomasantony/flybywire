@@ -43,3 +43,30 @@ def test_dom():
     assert node1.to_dict() == node1_dict
     assert node2.to_dict() == node2_dict
     assert node3.to_dict() == node3_dict
+
+def test_callback():
+    def click_callback():
+        pass
+    callback_dict = {'dom': {'t': 3,
+                     'p': {
+                        'attributes': {
+                            'fbwHasCallback': True,
+                            'fbwCLICKCallback': str(id(click_callback))
+                        }, 'fbwEvents': {'click': str(id(click_callback))}}, 'tn': 'BUTTON'}, 'callbacks': {str(id(click_callback)): (click_callback, None)}}
+
+    callback_test = h('button', onclick=click_callback)
+    assert callback_test.to_dict() == callback_dict
+
+def test_composed_dom():
+    def Counter(props):
+        count = props.get('count', 0)
+        return h('h1', str(count))
+
+
+    composed_dom = h('div',[h(Counter, count=10), h('button','FooBar')])
+    composed_dict = {'dom': {'tn': 'DIV', 't': 3, 'c':
+                            [{'c': [{'t': 1, 'x': '10'}], 't': 3, 'tn': 'H1'},
+                             {'c': [{'t': 1, 'x': 'FooBar'}], 't': 3, 'tn': 'BUTTON'}
+                            ]}, 'callbacks': {}}
+
+    assert composed_dom.to_dict() == composed_dict

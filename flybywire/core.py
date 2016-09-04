@@ -79,8 +79,11 @@ class App(object):
     def _process_domevent(self, event):
         """Routes DOM events to the right callback function."""
         if event['callback'] in self._callbacks:
-            cb_self, cb_func = self._callbacks[event['callback']]
-            cb_func(cb_self, event['event_obj'])
+            cb_func, cb_self = self._callbacks[event['callback']]
+            if cb_self is not None:
+                cb_func(cb_self, event['event_obj'])
+            else:
+                cb_func(event['event_obj'])
         else:
             logging.error('Callback '+event['callback']+' not found.')
 

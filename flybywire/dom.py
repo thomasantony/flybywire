@@ -13,18 +13,22 @@ class NodeType(object):
     Hook = 4
 
 class DomNode(object):
-    def __init__(self, tag, children, attr, events=None):
+    def __init__(self, tag, attr, events=None):
         """Initializes a DOM node."""
-        self.tag = tag.upper()
+        self.tag = tag
         self.attr = attr
-        self.children = children if children is not None else []
+        self.children = attr.get('children', [])
         self.events = events if events is not None else {}
 
     def to_dict(self):
         """Converts to dict compatible with vdom-as-json."""
+
+        if callable(self.tag):
+            return self.tag(self.attr).to_dict()
+
         node = defaultdict(dict)
         node['t'] = NodeType.Node
-        node['tn'] = self.tag
+        node['tn'] = self.tag.upper()
 
         callbacks = {}
         if len(self.children) > 0:
@@ -32,7 +36,7 @@ class DomNode(object):
             for c in self.children:
                 if isinstance(c, str):
                     node['c'].append({'t': NodeType.Text, 'x': c})
-                elif isinstance(c, DomNode):
+                else:
                     child_node_dict = c.to_dict()
                     node['c'].append(child_node_dict['dom'])
                     if len(child_node_dict['callbacks']) > 0:
@@ -59,23 +63,35 @@ class DomNode(object):
             events = {}
             new_callbacks = {}
             for e, cb in self.events.items():
+                # Check for bounded functions
+                if hasattr(cb, '__self__'):
+                    cb_func = cb.__func__
+                    cb_self = cb.__self__
+                else:
+                    cb_func = cb
+                    cb_self = None
+
                 # Remove 'on' from the event name to use in javascript
                 # Set attributes like fbwCLICK, fbwKEYUP etc.
-                attrib['fbw'+e[2:].upper()+'Callback'] = str(id(cb.__func__))
-                events[e[2:]] = str(id(cb.__func__))
-                new_callbacks[str(id(cb.__func__))] = (cb.__self__, cb.__func__)
+                attrib['fbw'+e[2:].upper()+'Callback'] = str(id(cb_func))
+                events[e[2:]] = str(id(cb_func))
+                new_callbacks[str(id(cb_func))] = (cb_func, cb_self)
 
             node['p']['fbwEvents'] = events
             node['p']['attributes'] = attrib
 
             callbacks.update(new_callbacks)
 
+        del node['p']['children']
+        if node['p'] == {}:
+            del node['p']
+
         return {'dom': node, 'callbacks': callbacks}
 
     def __str__(self):
         """String representation of the tag."""
         # TODO: Fix this to show full tag with all attributes
-        return '<'+self.tag+' />'
+        return '<'+str(self.tag)+' />'
 
     def __repr__(self):
         """Shortened description of the tag."""
@@ -83,19 +99,21 @@ class DomNode(object):
         if num_children > 0:
             inner_txt = (' with '+str(num_children)+' child'
                          +('ren' if num_children > 1 else ''))
-            return '<'+self.tag+inner_txt+'/>'
+            return '<'+str(self.tag)+inner_txt+'/>'
         else:
-            return '<'+self.tag+' />'
+            return '<'+str(self.tag)+' />'
 
 dom_events = ['onclick',
               'onmousedown',
               'onmouseup',
               'onkeydown',
               'onkeyup',
-              'onkeypress']
+              'onkeypress',
+              'onchange']
 
 def h(tag_name, children=None, **attr_and_events):
     """Helper function for building DOM trees."""
+
     if children is None:
         # If attr is a DomNode, a string or a list/tuple
         #  assume no attributes are given
@@ -103,6 +121,8 @@ def h(tag_name, children=None, **attr_and_events):
 
     if not isinstance(children, list):
         children = [children]
+
+    attr_and_events['children'] = children
 
     # Separate events from attributes
     attributes = {}
@@ -113,10 +133,8 @@ def h(tag_name, children=None, **attr_and_events):
         else:
             attributes[k] = val
 
-    return DomNode(tag_name, children, attributes, events)
+    return DomNode(tag_name, attributes, events)
 
 if __name__ == '__main__':
-    def click_callback():
-        pass
-    test = h('button', onclick=click_callback)
+    
     print(test.to_dict())
