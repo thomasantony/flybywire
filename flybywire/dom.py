@@ -13,6 +13,16 @@ class NodeType(object):
     Node = 3
     Hook = 4
 
+dom_events = ['onclick',
+              'onmousedown',
+              'onmouseup',
+              'onkeydown',
+              'onkeyup',
+              'onkeypress',
+              'onchange']
+
+attributes_as_props = ['style', 'children']
+
 class DomNode(object):
     def __init__(self, tag, attr, events=None):
         """Initializes a DOM node."""
@@ -52,12 +62,20 @@ class DomNode(object):
             node['n'] = self.attr['namespace']
             del self.attr['namespace']
 
+        node['p'] = {}
+
         if len(self.attr) > 0:
-            node['p'] = self.attr
+            # Convert all attributes to strings
+            attrib = node['p'].get('attributes',{})
+            for k, val in self.attr.items():
+                if k not in attributes_as_props:
+                    attrib[k] = str(val)
+                else:
+                    node['p'][k] = val
+            node['p']['attributes'] = attrib
 
         if len(self.events) > 0:
             attrib = node['p'].get('attributes',{})
-
             # Create a unique ID based on the callback IDs
             # domid = '_'.join(str(id(cb)) for e, cb in self.events.items())
             attrib['fbwHasCallback'] = True
@@ -106,13 +124,6 @@ class DomNode(object):
         else:
             return '<'+str(self.tag)+' />'
 
-dom_events = ['onclick',
-              'onmousedown',
-              'onmouseup',
-              'onkeydown',
-              'onkeyup',
-              'onkeypress',
-              'onchange']
 
 def h(tag_name, children=None, **attr_and_events):
     """Helper function for building DOM trees."""

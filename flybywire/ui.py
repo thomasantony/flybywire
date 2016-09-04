@@ -1,9 +1,10 @@
-
+import abc
 class Component(object):
-"""Decorator used to define a component."""
-
+    """Class defining a UI component."""
+    __metaclass__ = abc.ABCMeta
     def __init__(self):
         self._state = None
+        self._observers = []
 
     @abc.abstractmethod
     def render():
@@ -26,10 +27,41 @@ class Component(object):
 
     def set_state(self, new_state):
         """Set new state and trigger redraw."""
+        # Merge into dictionary if state is a dictionary (similar to React)
         if isinstance(self.state, dict) and isinstance(new_state, dict):
-            # Merge into dictionary if state is a dictionary (similar to React)
             self._state.update(new_state)
         else:
             self._state = new_state
 
-        self.render()
+        self.notify_observers()
+
+    def add_observer(self, observer):
+        """
+        Sets up observer who is triggered whenever the state is changed
+        """
+        self._observers.append(observer)
+
+    def notify_observers(self):
+        """
+        Notifies observers that the component state has changed
+        """
+        for obs in self._observers:
+            obs()
+
+    def remove_observer(self, callback):
+        """
+        Removes an observer
+        """
+        self._observers.remove(observer)
+
+    def on_load(self):
+        """
+        Load event handler
+        """
+        pass
+
+    def on_close(self):
+        """
+        Close event handler
+        """
+        pass

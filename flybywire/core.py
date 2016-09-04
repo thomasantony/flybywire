@@ -13,13 +13,12 @@ import webbrowser
 
 from autobahn.asyncio.websocket import WebSocketServerFactory, WebSocketServerProtocol
 
-class App(object):
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self):
+class FBWApp(object):
+    def __init__(self, root_component):
         self.interface = FBWEventProcessor()
         self.server = FBWEventServer(processor=self.interface)
         self._state = None
+        self._root  = root_component
         self._callbacks = {}
         logging.basicConfig(
             format="%(asctime)s [%(levelname)s] - %(funcName)s: %(message)s",
@@ -29,51 +28,39 @@ class App(object):
         # Setup callback to initialize DOM when the client connects
         self.register('init', self._oninit)
         self.register('domevent', self._process_domevent)
+        self.register('close', self._onclose)
         # self.register('shutdown', self._shutdown)
 
-    @abc.abstractmethod
-    def render():
-        """Applications must implement this method."""
-        raise NotImplementedError()
+        # Trigger render function when state is updated
+        self._root.add_observer(self.remote_render)
 
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, _):
-        raise RuntimeError('Use the set_state() or set_initial_state() '+\
-                           'to modify the state')
-
-    def set_initial_state(self, state):
-        """Sets the application state without triggering a redraw."""
-        # Helps initialize state before client is connected
-        self._state = state
-
-    def set_state(self, new_state):
-        """Set new state and trigger redraw."""
-        if isinstance(self.state, dict) and isinstance(new_state, dict):
-            # Merge into dictionary if state is a dictionary (similar to React)
-            self._state.update(new_state)
-        else:
-            self._state = new_state
-        content = self.render().to_dict()
-        vdom = content['dom']
-        self.remote_render(vdom)
-
-    @asyncio.coroutine
-    def _oninit(self, event):
-        """Trigger render() when app initializes."""
-        content = self.render().to_dict()
-        vdom = content['dom']
-        self.update_callbacks(content['callbacks'])
-        # Send init command to create initial DOM
-        self.interface.dispatch({ 'name': 'init', 'vdom': json.dumps(vdom)})
+    def remote_render(self):
+        """Converts given vdom to JSON and sends it to browser for rendering."""
+        content = self._root.render().to_dict()
+        self._callbacks.update(content['callbacks'])
+        self.interface.dispatch({ 'name': 'render',
+                                  'vdom': json.dumps(content['dom'])})
 
     def update_callbacks(self, callbacks):
         """Updates internal list with callbacks found in the dom."""
         if callbacks != self._callbacks:
             self._callbacks.update(callbacks)
+
+    @asyncio.coroutine
+    def _oninit(self, event):
+        """Trigger render() when app initializes."""
+        content = self._root.render().to_dict()
+        self.update_callbacks(content['callbacks'])
+        # Send init command to create initial DOM
+        self.interface.dispatch({ 'name': 'init',
+                                  'vdom': json.dumps(content['dom'])})
+
+        self._root.on_load()
+
+    @asyncio.coroutine
+    def _onclose(self, event):
+        """Trigger the close event handler."""
+        self._root.on_close()
 
     @asyncio.coroutine
     def _process_domevent(self, event):
@@ -87,32 +74,18 @@ class App(object):
         else:
             logging.error('Callback '+event['callback']+' not found.')
 
-    #
-    # def _shutdown(self, event):
-    #     """Shuts down the server."""
-    #     exit(0)
-
     def start(self, autobrowse=True):
         """Start the application."""
         self.server.start(autobrowse)
 
     def register(self, event, callback, selector=None):
-        """Register event callback"""
+        """Register event callback."""
 
         self.interface.register(event, callback, selector)
 
     def unregister(self, event, callback, selector=None):
-        """Register event callback"""
-
+        """Register event callback."""
         self.interface.unregister(event, callback, selector)
-
-    def remote_render(self, vdom):
-        """Converts given vdom to JSON and sends it to browser for rendering."""
-        content = self.render().to_dict()
-        vdom = content['dom']
-        self._callbacks.update(content['callbacks'])
-        self.interface.dispatch({ 'name': 'render', 'vdom': json.dumps(vdom)})
-
 
 class FBWEventProcessor(object):
     """Event handler providing hooks for callback functions"""

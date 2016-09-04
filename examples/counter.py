@@ -1,4 +1,5 @@
-from flybywire.core import App
+from flybywire.core import FBWApp
+from flybywire.ui import Component
 from flybywire.dom import h
 
 
@@ -6,8 +7,7 @@ def CounterView(count):
     """A simple functional stateless component."""
     return h('h1', str(count))
 
-
-class CounterApp(App):
+class CounterApp(Component):
     def __init__(self):
         """Initialize the application."""
         super().__init__()
@@ -31,5 +31,5 @@ class CounterApp(App):
         self.set_state(self.state - 1)
 
 
-app = CounterApp()
+app = FBWApp(CounterApp())
 app.start()
