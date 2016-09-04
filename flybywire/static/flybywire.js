@@ -41,7 +41,7 @@ function init() {
                         cb = el.getAttribute(evtPrefix+'Callback');
                         if(cb)
                             send_dom_event(cb, e);
-                        e.preventDefault();
+                        // e.preventDefault();
                     };
                     el.addEventListener(evt, el[evtPrefix+'Listener'], false);
                     el[evtPrefix+'Bound'] = true;

@@ -2,9 +2,9 @@ from flybywire.core import App
 from flybywire.dom import h, component
 import asyncio
 
-@component
-def CounterView(props):
-    return h('h1', str(props['count']))
+
+def CounterView(count):
+    return h('h1', str(count))
 
 class CounterApp(App):
     def __init__(self):

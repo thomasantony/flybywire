@@ -59,11 +59,8 @@ def test_callback():
     assert callback_test.to_dict() == callback_dict
 
 def test_composed_dom():
-    @component
-    def Counter(props):
-        count = props.get('count', 0)
+    def Counter(count):
         return h('h1', str(count))
-
 
     composed_dom = h('div',[Counter(count=10), h('button','FooBar')])
     composed_dict = {'dom': {'tn': 'DIV', 't': 3, 'c':

@@ -65,6 +65,8 @@ class DomNode(object):
             new_callbacks = {}
             for e, cb in self.events.items():
                 # Check for bounded functions
+                if cb is None:
+                    continue
                 if hasattr(cb, '__self__'):
                     cb_func = cb.__func__
                     cb_self = cb.__self__
@@ -82,7 +84,9 @@ class DomNode(object):
 
             callbacks.update(new_callbacks)
 
-        del node['p']['children']
+        if 'children' in node['p']:
+            del node['p']['children']
+
         if not node['p']:
             del node['p']
         return {'dom': node, 'callbacks': callbacks}
@@ -123,6 +127,9 @@ def h(tag_name, children=None, **attr_and_events):
 
     attr_and_events['children'] = children
 
+    if callable(tag_name):
+        return tag_name(**attr_and_events)
+
     # Separate events from attributes
     attributes = {}
     events = {}
@@ -135,15 +142,15 @@ def h(tag_name, children=None, **attr_and_events):
     return DomNode(tag_name, attributes, events)
 
 
-def component(fn):
-    """
-    Decorator for making functional components
-    """
-    @wraps(fn)
-    def wrapped_fn(**kwargs):
-        return h(fn, **kwargs)
-
-    return wrapped_fn
+# def component(fn):
+#     """
+#     Decorator for making functional components
+#     """
+#     @wraps(fn)
+#     def wrapped_fn(**kwargs):
+#         return h(fn, **kwargs)
+#
+#     return wrapped_fn
 
 if __name__ == '__main__':
 
