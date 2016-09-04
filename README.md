@@ -14,8 +14,7 @@ Example
 This is a really simple example to demonstrate the library in action. It shows simple counter whose value can be controlled by two buttons.
 
 ```python
-from flybywire.core import FBWApp
-from flybywire.ui import Component
+from flybywire.ui import Application, Component
 from flybywire.dom import h
 
 
@@ -23,11 +22,12 @@ def CounterView(count):
     """A simple functional stateless component."""
     return h('h1', str(count))
 
+@Application
 class CounterApp(Component):
     def __init__(self):
         """Initialize the application."""
+        # super(CounterApp, self).__init__()  # Python 2.7
         super().__init__()
-        # super(CounterApp, self).__init__()  # In Python 2.7
         self.set_initial_state(0)
 
     def render(self):
@@ -47,7 +47,7 @@ class CounterApp(Component):
         self.set_state(self.state - 1)
 
 
-app = FBWApp(CounterApp())
+app = CounterApp()
 app.start()
 ```
 
@@ -55,16 +55,11 @@ app.start()
 The example can also be found in `examples/counter.py`.
 
 
-A note about Components
------------------------
-As of now, the only types of components you can create are stateless, functional components which are just simple Python functions. The only stateful component possible is the main 'App' class. This will soon be changed so that there is a separate Component class that can be used to create stateful components similar to how it is done in React.
-
-
 Bugs, features and caveats
 --------------------------
 - As of now, there is a system in place for some rudimentary DOM event communications. However, slightly more "advanced" features such as doing "event.preventDefault()" for specific events for example, is not available at present. Ideas for exposing this functionality are welcome! I might possibly add back some of the imperative command framework from [Sofi](https://github.com/tryexceptpass/sofi) that I had originally removed from the code.
 
-- Some simple functionality such as focusing a textbox when the page loads or clearing it after pressing enter cannot be done right now. There might be some simple way of solving this, possibly by injecting some javascript at render-time.
+- Some simple functionality such as focusing a textbox or clearing it after pressing enter cannot be done right now. There might be some simple way of solving this, possibly by injecting some javascript at render-time.
 
 - The server will shut down as soon you close your browser window. This is because there is no option to reset the applicaton state right now without restarting the program.
 

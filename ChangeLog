@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+* Cleaned up dom.py and fixed bugs in test_dom.py
+* Added @Application class decorator
+* Fixed bug in timer.py for load/close events. Refactored coroutine decorator is no longer needed
+* Created new Component class separate from Application class. Added observer framework for monitoring state in component
+* Minor changes
 * Updated README.md with new demo and gif. Fixed typo in setup.cfg
 * Fixed bug in test_dom.py
 * Very rudimentary (and buggy) todo app example
