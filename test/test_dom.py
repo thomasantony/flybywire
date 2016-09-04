@@ -52,7 +52,8 @@ def test_callback():
                         'attributes': {
                             'fbwHasCallback': True,
                             'fbwCLICKCallback': str(id(click_callback))
-                        }, 'fbwEvents': {'click': str(id(click_callback))}}, 'tn': 'BUTTON'}, 'callbacks': {str(id(click_callback)): (click_callback, None)}}
+                        }, 'fbwEvents': 'click'}, 'tn': 'BUTTON'},
+                     'callbacks': {str(id(click_callback)): (click_callback, None)}}
 
     callback_test = h('button', onclick=click_callback)
     assert callback_test.to_dict() == callback_dict

@@ -60,7 +60,7 @@ class DomNode(object):
             # Create a unique ID based on the callback IDs
             # domid = '_'.join(str(id(cb)) for e, cb in self.events.items())
             attrib['fbwHasCallback'] = True
-            events = {}
+            events = []
             new_callbacks = {}
             for e, cb in self.events.items():
                 # Check for bounded functions
@@ -71,21 +71,19 @@ class DomNode(object):
                     cb_func = cb
                     cb_self = None
 
-                # Remove 'on' from the event name to use in javascript
                 # Set attributes like fbwCLICK, fbwKEYUP etc.
                 attrib['fbw'+e[2:].upper()+'Callback'] = str(id(cb_func))
-                events[e[2:]] = str(id(cb_func))
+                events.append(e[2:])  # Remove 'on' from the event name
                 new_callbacks[str(id(cb_func))] = (cb_func, cb_self)
 
-            node['p']['fbwEvents'] = events
+            node['p']['fbwEvents'] = ' '.join(events)
             node['p']['attributes'] = attrib
 
             callbacks.update(new_callbacks)
 
         del node['p']['children']
-        if node['p'] == {}:
+        if not node['p']:
             del node['p']
-
         return {'dom': node, 'callbacks': callbacks}
 
     def __str__(self):
@@ -136,5 +134,5 @@ def h(tag_name, children=None, **attr_and_events):
     return DomNode(tag_name, attributes, events)
 
 if __name__ == '__main__':
-    
+
     print(test.to_dict())

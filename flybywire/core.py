@@ -205,13 +205,13 @@ class FBWEventProtocol(WebSocketServerProtocol):
     def onClose(self, wasClean, code, reason):
         logging.info("WebSocket connection closed: {}".format(reason))
 
-        # Stop server when browser exists
-        loop = asyncio.get_event_loop()
-        loop.stop()
-        # Stop all pending tasks
-        for task in asyncio.Task.all_tasks():
-            task.cancel()
-        exit(0)
+        # # Stop server when browser exists
+        # loop = asyncio.get_event_loop()
+        # loop.stop()
+        # # Stop all pending tasks
+        # for task in asyncio.Task.all_tasks():
+        #     task.cancel()
+        # exit(0)
 
 
 class FBWEventServer(object):

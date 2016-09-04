@@ -33,15 +33,13 @@ function init() {
     function bind_events(){
         event_nodes = document.querySelectorAll('[fbwHasCallback]')
         event_nodes.forEach(function(el) {
-            Object.keys(el.fbwEvents).forEach(function(evt) {
+            el.fbwEvents.split(' ').forEach(function(evt) {
                 evtPrefix = 'fbw'+evt.toUpperCase();
                 if (!el[evtPrefix+'Bound']){
                     el[evtPrefix+'Listener'] = function(e){
                         cb = el.getAttribute(evtPrefix+'Callback')
                         if(cb)
-                        {
                             send_dom_event(cb, e)
-                        }
                     };
                     el.addEventListener(evt, el[evtPrefix+'Listener'], false);
                     el[evtPrefix+'Bound'] = true;
