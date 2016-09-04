@@ -1,4 +1,4 @@
-from flybywire.dom import h
+from flybywire.dom import h, component
 def test_dom():
     count = 0
     node1 = h('div', str(count),
@@ -59,12 +59,13 @@ def test_callback():
     assert callback_test.to_dict() == callback_dict
 
 def test_composed_dom():
+    @component
     def Counter(props):
         count = props.get('count', 0)
         return h('h1', str(count))
 
 
-    composed_dom = h('div',[h(Counter, count=10), h('button','FooBar')])
+    composed_dom = h('div',[Counter(count=10), h('button','FooBar')])
     composed_dict = {'dom': {'tn': 'DIV', 't': 3, 'c':
                             [{'c': [{'t': 1, 'x': '10'}], 't': 3, 'tn': 'H1'},
                              {'c': [{'t': 1, 'x': 'FooBar'}], 't': 3, 'tn': 'BUTTON'}

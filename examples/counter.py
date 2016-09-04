@@ -1,25 +1,21 @@
 from flybywire.core import App
-from flybywire.dom import h
+from flybywire.dom import h, component
 import asyncio
 
+@component
 def CounterView(props):
-    return h('div',
-                [h('h1', str(count)),
-                 h('button', '+', onclick = self.increment),
-                 h('button', '-', onclick = self.decrement)]
-            )
+    return h('h1', str(props['count']))
+
 class CounterApp(App):
     def __init__(self):
         """Initialize the application."""
         super().__init__() # in Python 3.5
         self.set_initial_state(0)
-        self.task = None
 
     def render(self):
         """Renders view given application state."""
-        count = self.state
         return h('div',
-                    [h('h1', str(count)),
+                    [CounterView(count=self.state),
                      h('button', '+', onclick = self.increment),
                      h('button', '-', onclick = self.decrement)]
                 )
