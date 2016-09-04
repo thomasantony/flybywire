@@ -10,7 +10,8 @@ def CounterView(count):
 class CounterApp(App):
     def __init__(self):
         """Initialize the application."""
-        super().__init__() # in Python 3.5
+        super().__init__()
+        # super(CounterApp, self).__init__()  # In Python 2.7
         self.set_initial_state(0)
 
     def render(self):

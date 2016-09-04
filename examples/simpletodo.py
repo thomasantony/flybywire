@@ -17,7 +17,7 @@ def NewTodoItem(onAddItem=None):
 class TodoApp(App):
     def __init__(self):
         """Initialize the application."""
-        super().__init__() # in Python 3.5
+        super().__init__()
         self.set_initial_state({'todos': ['Foo','Bar'], 'new_todo': ''})
 
     def render(self):

@@ -1,9 +1,6 @@
 CHANGES
 =======
 
-0.0.2
------
-
 * Updated README.md with new demo and gif. Fixed typo in setup.cfg
 * Fixed bug in test_dom.py
 * Very rudimentary (and buggy) todo app example
