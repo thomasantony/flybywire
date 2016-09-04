@@ -31,9 +31,9 @@ function init() {
         bind_events();
     }
     function bind_events(){
-        event_nodes = document.querySelectorAll('[fbwHasCallback]')
+        event_nodes = document.querySelectorAll('[fbwEvents]')
         event_nodes.forEach(function(el) {
-            el.fbwEvents.split(' ').forEach(function(evt) {
+            el.getAttribute('fbwEvents').split(' ').forEach(function(evt) {
                 evtPrefix = 'fbw'+evt.toUpperCase();
                 if (!el[evtPrefix+'Bound'])
                 {

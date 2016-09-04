@@ -11,17 +11,16 @@ def test_dom():
         })
 
     node1_dict = {'dom': {'c': [{'t': 1, 'x': '0'}],
-                  'tn': 'DIV', 't': 3,
-                  'p': {'style': {
-                        'width': '100px',
-                        'height': '100px',
-                        'border': '1px solid red',
-                        'lineHeight': '100px',
-                        'textAlign': 'center'
-                        }
-                  }
-                 },
-                 'callbacks': {}}
+                    'tn': 'DIV', 't': 3,
+                      'p': {'style': {
+                            'width': '100px',
+                            'height': '100px',
+                            'border': '1px solid red',
+                            'lineHeight': '100px',
+                            'textAlign': 'center'
+                            }}
+                      },
+                     'callbacks': {}}
 
     node2 = h('div', h('span','foobar'))
     node2_dict = {'dom': {'t': 3, 'tn': 'DIV',
@@ -50,9 +49,9 @@ def test_callback():
     callback_dict = {'dom': {'t': 3,
                      'p': {
                         'attributes': {
-                            'fbwHasCallback': True,
-                            'fbwCLICKCallback': str(id(click_callback))
-                        }, 'fbwEvents': 'click'}, 'tn': 'BUTTON'},
+                            'fbwCLICKCallback': str(id(click_callback)),
+                            'fbwEvents': 'click',
+                        }}, 'tn': 'BUTTON'},
                      'callbacks': {str(id(click_callback)): (click_callback, None)}}
 
     callback_test = h('button', onclick=click_callback)
@@ -67,5 +66,4 @@ def test_composed_dom():
                             [{'c': [{'t': 1, 'x': '10'}], 't': 3, 'tn': 'H1'},
                              {'c': [{'t': 1, 'x': 'FooBar'}], 't': 3, 'tn': 'BUTTON'}
                             ]}, 'callbacks': {}}
-
     assert composed_dom.to_dict() == composed_dict

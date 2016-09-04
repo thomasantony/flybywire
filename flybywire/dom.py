@@ -21,7 +21,8 @@ dom_events = ['onclick',
               'onkeypress',
               'onchange']
 
-attributes_as_props = ['style', 'children']
+# Attributes to be saved directly as DOM element properties
+attributes_as_props = ['style']
 
 class DomNode(object):
     def __init__(self, tag, attr, events=None):
@@ -62,52 +63,63 @@ class DomNode(object):
             node['n'] = self.attr['namespace']
             del self.attr['namespace']
 
-        node['p'] = {}
+        event_attributes, new_callbacks = self.get_dom_callbacks()
+        callbacks.update(new_callbacks)
+        self.attr.update(event_attributes)
 
-        if len(self.attr) > 0:
-            # Convert all attributes to strings
-            attrib = node['p'].get('attributes',{})
-            for k, val in self.attr.items():
-                if k not in attributes_as_props:
-                    attrib[k] = str(val)
-                else:
-                    node['p'][k] = val
-            node['p']['attributes'] = attrib
+        attributes, properties = self.get_attributes_and_props()
 
-        if len(self.events) > 0:
-            attrib = node['p'].get('attributes',{})
-            # Create a unique ID based on the callback IDs
-            # domid = '_'.join(str(id(cb)) for e, cb in self.events.items())
-            attrib['fbwHasCallback'] = True
-            events = []
-            new_callbacks = {}
-            for e, cb in self.events.items():
-                # Check for bounded functions
-                if cb is None:
-                    continue
-                if hasattr(cb, '__self__'):
-                    cb_func = cb.__func__
-                    cb_self = cb.__self__
-                else:
-                    cb_func = cb
-                    cb_self = None
+        if len(attributes) > 0:
+            properties['attributes'] = attributes
 
-                # Set attributes like fbwCLICK, fbwKEYUP etc.
-                attrib['fbw'+e[2:].upper()+'Callback'] = str(id(cb_func))
-                events.append(e[2:])  # Remove 'on' from the event name
-                new_callbacks[str(id(cb_func))] = (cb_func, cb_self)
+        if len(properties) > 0:
+            node['p'] = properties
 
-            node['p']['fbwEvents'] = ' '.join(events)
-            node['p']['attributes'] = attrib
-
-            callbacks.update(new_callbacks)
-
-        if 'children' in node['p']:
-            del node['p']['children']
-
-        if not node['p']:
-            del node['p']
         return {'dom': node, 'callbacks': callbacks}
+
+    def get_dom_callbacks(self):
+        attributes = {}
+        # attributes['fbwHasCallback'] = True
+        callbacks = {}
+        events = []
+
+        for e, cb in self.events.items():
+            # Check for bounded functions
+            if cb is None:
+                continue
+            if hasattr(cb, '__self__'):
+                cb_func = cb.__func__
+                cb_self = cb.__self__
+            else:
+                cb_func = cb
+                cb_self = None
+
+            # Set attributes like fbwCLICK, fbwKEYUP etc.
+            # Remove 'on' from the event name
+            attributes['fbw'+e[2:].upper()+'Callback'] = str(id(cb_func))
+            events.append(e[2:])
+            callbacks[str(id(cb_func))] = (cb_func, cb_self)
+
+        if len(events) > 0:
+            attributes['fbwEvents'] = ' '.join(events)
+
+        return attributes, callbacks
+
+    def get_attributes_and_props(self):
+        attributes = {}
+        properties = {}
+        for k, val in self.attr.items():
+            # Special case
+            if k == 'children':
+                continue
+
+            if k not in attributes_as_props:
+                # Convert all attributes to strings
+                attributes[k] = str(val)
+            else:
+                properties[k] = val
+
+        return attributes, properties
 
     def __str__(self):
         """String representation of the tag."""
@@ -151,8 +163,3 @@ def h(tag_name, children=None, **attr_and_events):
             attributes[k] = val
 
     return DomNode(tag_name, attributes, events)
-
-
-if __name__ == '__main__':
-
-    print(test.to_dict())
