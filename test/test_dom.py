@@ -1,4 +1,4 @@
-from flybywire.dom import h, component
+from flybywire.dom import h
 def test_dom():
     count = 0
     node1 = h('div', str(count),
